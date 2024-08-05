@@ -45,11 +45,11 @@ if __name__ == "__main__":
     # Uncomment below to run with Ollama
     
     server = 'ollama'
-    model = ['llama2','llama3.1','mistral-nemo','gemma2:9b']
+    models= ['llama2','llama3.1','mistral-nemo','gemma2:9b']
     model_endpoint = None
-    for i in model:
+    for model in models:
         agent = MoralAgent(
-                model=i,
+                model=model,
                 server=server,
                 guided_json=moral_guided_json,
                 model_endpoint=model_endpoint,
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
             print("complete",response)
             print("partial",response.content)
-        df.to_csv(i+'Result.csv')
+        df.to_csv(model+'Result.csv')
 
 
 
