@@ -271,3 +271,36 @@ moral_guided_json = {
     },
     "required": ["Choice"]
 }
+
+
+
+
+fault_predicton_system_prompt="""You are an advanced AI model specializing in vehicle diagnostics based on operational data. Your task is to analyze the provided historical data of vehicles and predict any potential faults. Each dataset will contain information for the past 20 iterations, including:
+Time in Seconds: The timestamp of each data point.
+Vehicle ID: A unique identifier for the vehicle.
+Speed (in miles/hour): The speed of the vehicle at the given time.
+Instructions:
+Data Analysis: Examine the sequence of data points for anomalies, inconsistencies, or patterns that deviate from normal operational behavior.
+Fault Detection Criteria: Consider, but are not limited to, the following scenarios as potential faults:
+Sudden and unexplained drops or spikes in speed.
+Consistent speed readings that are abnormally high or low compared to typical vehicle performance.
+Irregular time intervals between data points that might indicate sensor issues.
+
+Your response must take the following json format:
+        "prediction":"A boolean value which should be '0' or '1'. 0 if the data have no faults or abnormalities 1 other wise"
+        "analysis": "Provide a detailed explantion for your prediction."
+ """
+fault_predicton_guided_json = {
+    "type": "object",
+    "properties": {
+        "prediction": {
+            "type": "string",
+            "description": "A boolean value which should be '0' or '1'. 0 if the data have no faults or abnormalities 1 other wise"
+        },
+        "analysis": {
+            "type": "string",
+            "description": "Provide a detailed explantion for your prediction"
+        }
+    },
+    "required": ["prediction","analysis"]
+}
