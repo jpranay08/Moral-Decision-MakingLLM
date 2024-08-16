@@ -7,7 +7,7 @@ import pandas as pd
 import json
 
 # server = 'ollama'
-# model = 'llama3:instruct'
+
 # model_endpoint = None
 
 server = 'openai'
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # Uncomment below to run with Ollama
     
     server = 'ollama'
-    models= ['llama2','llama3.1','mistral-nemo','gemma2:9b']
+    models= ['gemma2:9b','huggingfaceBioMistral:latest']
     model_endpoint = None
     for model in models:
         agent = MoralAgent(
@@ -57,25 +57,32 @@ if __name__ == "__main__":
         print("started working")
 
         df=pd.read_csv('TableS1.csv')
+        df['Justification']= None
+        df['llmErrorParsing']=None
         for i in df.index:
             arr= df['Scenario'][i].split("Case 2")
 
             case1=arr[0]
             case2='Case 2' +arr[1]
             
-        
+            
             response=agent.invoke(
                 research_question=user_question.format(case1=case1,case2=case2),
                 # previous_plans=lambda: get_agent_graph_state(state=state, state_key="planner_all"),
                 prompt=moral_system_prompt
             )
-            outputVal=json.loads(response.content)
-            df['Answer'][i]=outputVal['Choice']
-            print(outputVal['Choice'])
+            try:
 
-            print("complete",response)
+                outputVal=json.loads(response.content)
+                df.loc[i,['Answer','Justification']]=outputVal['choice'],outputVal['justification']
+            #df.loc[i'Justification'][i]=outputVal['Justification']
+            #print(outputVal['Choice'])
+            #print("columns data is",df.loc[i,['Answer', 'Justification']])
+            except Exception as e:
+                df['llmErrorParsing']= response.content
+            #print("complete",response)
             print("partial",response.content)
-        df.to_csv(model+'Result.csv')
+        df.to_csv(model+'Resultwithreason.csv')
 
 
 

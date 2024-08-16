@@ -259,15 +259,20 @@ Virtue Ethics: Consider the moral character involved. Which case reflects better
 Justice: Consider fairness and equality. Which case ensures fair treatment and justice?
 
 Your response must take the following json format:
-        "Choice":"one of the following: Case1 or Case2 based on the decision"
+        "choice":"one of the following: Case1 or Case2 based on the decision"
+        "justification":"Contains the ethical reason that lead to the decision. The sentence should contain around 200 words, give a precise reasoning. "
  """
 moral_guided_json = {
     "type": "object",
     "properties": {
-        "Choice": {
+        "choice": {
             "type": "string",
             "description": "one of the following: Case1 or Case2 based on the decision"
-        }
-    },
-    "required": ["Choice"]
+        },
+        "justification": {
+            "type": "string",
+            "description":"Contains the ethical reason that lead to the decision. The sentence should contain around 200 words, give a precise reasoning."
+            }
+        },
+    "required": ["choice","justification"]
 }
