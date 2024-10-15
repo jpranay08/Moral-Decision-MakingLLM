@@ -1,8 +1,14 @@
 # from agent_graph.graph import create_graph, compile_workflow
 
 from agents.agents import MoralAgent
-from prompts.prompts import moral_system_prompt
+from prompts.prompts import moral_system_prompt_without_theories
+from prompts.prompts import moral_system_prompt_with_theories_why
+from prompts.prompts import moral_system_prompt_with_COT
 from prompts.prompts import moral_guided_json
+from prompts.prompts import Common_sense_detailed
+from prompts.prompts import moral_detailed_five_thoeries_prompt_COT
+from prompts.prompts import moral_system_prompt
+from prompts.prompts import moral_util_deontology_COT
 import pandas as pd
 import json
 
@@ -45,44 +51,51 @@ if __name__ == "__main__":
     # Uncomment below to run with Ollama
     
     server = 'ollama'
-    models= ['gemma2:9b','huggingfaceBioMistral:latest']
+    models= ['llama2','llama3.1:latest','mistral-nemo:latest','gemma2:9b']
+    #models=['gemma2:9b' ] "full_boyvsgirl":"boyvsgirl",
+    #datafiles_folders={"full_boyvsgirl":"boyvsgirl","full_manvsmaleathlete":"maleathletevsman","full_manvsboy":"manvsboy","full_manvsoldman":"manvsoldman","full_oldvsboy":"OldvsBoy","full_manvswoman":"womanvsman"}
+    datafiles_folders={"full_manvswoman":"womanvsman"}
+    datafiles=["womanvsman"]
     model_endpoint = None
-    for model in models:
-        agent = MoralAgent(
-                model=model,
-                server=server,
-                guided_json=moral_guided_json,
-                model_endpoint=model_endpoint,
-                temperature=0 )
-        print("started working")
+    for folder,datafile in datafiles_folders.items():
 
-        df=pd.read_csv('TableS1.csv')
-        df['Justification']= None
-        df['llmErrorParsing']=None
-        for i in df.index:
-            arr= df['Scenario'][i].split("Case 2")
+        for model in models:
+            #print("/home/xxp12/Desktop/llm/CustomLLm/wot_grp/"+model+datafile+".csv")
+            agent = MoralAgent(
+                    model=model,
+                    server=server,
+                    guided_json=moral_guided_json,
+                    model_endpoint=model_endpoint,
+                    temperature=0 )
+            print("started working",datafile,model)
 
-            case1=arr[0]
-            case2='Case 2' +arr[1]
+            df=pd.read_csv('/home/xxp12/Desktop/llm/CustomLLm/generate_cases/'+datafile+".csv")
+            df['Justification']= None
+            df['llmErrorParsing']=None
+            df['Answer']= None
+            for i in df.index:
+            #arr= df['case1'][i]
+
+                case1=df['case1'][i]
+                case2=df['case2'][i]
             
-            
-            response=agent.invoke(
-                research_question=user_question.format(case1=case1,case2=case2),
+                try:
+                    response=agent.invoke(
+                    research_question=user_question.format(case1=case1,case2=case2),
                 # previous_plans=lambda: get_agent_graph_state(state=state, state_key="planner_all"),
-                prompt=moral_system_prompt
-            )
-            try:
-
-                outputVal=json.loads(response.content)
-                df.loc[i,['Answer','Justification']]=outputVal['choice'],outputVal['justification']
-            #df.loc[i'Justification'][i]=outputVal['Justification']
-            #print(outputVal['Choice'])
-            #print("columns data is",df.loc[i,['Answer', 'Justification']])
-            except Exception as e:
-                df['llmErrorParsing']= response.content
+                    prompt=moral_util_deontology_COT)
+            
+                    outputVal=json.loads(response.content)
+                    df.loc[i,['Answer','Justification']]=outputVal['choice'],outputVal['justification']
+                except json.decoder.JSONDecodeError as e:
+                    print("error deconding the respnse",response.content)
+                except Exception as e:
+                    df['llmErrorParsing']= response.content
+                except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                    print('Error Decoding')
             #print("complete",response)
-            print("partial",response.content)
-        df.to_csv(model+'Resultwithreason.csv')
+                print("partial",response.content)
+            df.to_csv("/home/xxp12/Desktop/llm/CustomLLm/util_deontology_COT/"+folder+"/"+model+datafile+".csv")
 
 
 
